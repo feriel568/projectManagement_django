@@ -1,0 +1,21 @@
+# Fichiers Python
+*.pyc
+*.pyo
+__pycache__/
+
+# Environnement virtuel
+venv/
+env/
+.env
+
+# Fichiers de base de données
+db.sqlite3
+
+# Fichiers de cache
+*.log
+*.pot
+*.pyc
+*.egg-info/
+
+# Dossiers de médiathèque
+media/
