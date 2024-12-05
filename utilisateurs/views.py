@@ -11,7 +11,7 @@ def inscription(request):
         if form.is_valid():
             user = form.save()
             login(request, user)  # Connexion automatique après l'inscription
-            return redirect('home')  # Redirige vers la page d'accueil
+            return redirect('utilisateurs:connexion')  
     else:
         form = UtilisateurInscriptionForm()
     return render(request, 'utilisateurs/inscription.html', {'form': form})
