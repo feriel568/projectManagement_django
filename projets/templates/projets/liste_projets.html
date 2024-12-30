@@ -6,6 +6,7 @@
     <title>Liste des Projets</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
     <!-- Navbar -->
@@ -18,25 +19,14 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     {% if user.is_authenticated %}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Bonjour, {{ user.username }}
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                <li><form method="POST" action="{% url 'utilisateurs:logout' %}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="dropdown-item">Déconnexion</button>
-                                </form>
-                                </li>
-                            </ul>
+                        <li class="nav-item"> 
+                            <form method="POST" action="{% url 'utilisateurs:logout' %}">
+                                {% csrf_token %}
+                                <button class="btn btn-link nav-link">Déconnexion</button>
+                            </form>
                         </li>
                     {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">Se connecter</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'signup' %}">S'inscrire</a>
-                        </li>
+                        <li class="nav-item"><a href="{% url 'login' %}" class="nav-link">Se connecter</a></li>
                     {% endif %}
                 </ul>
             </div>
@@ -55,20 +45,106 @@
                     <div class="col-md-6">
                         <div class="card shadow-sm">
                             <div class="card-body">
-                                <h5 class="card-title">{{ projet.titre }}</h5>
+                                <h5 class="card-title d-flex justify-content-between align-items-center">
+                                    {{ projet.titre }}
+                                    <span>
+                                        <!-- Trigger Edit Modal -->
+                                        <a href="#" data-bs-toggle="modal" data-bs-target="#editProjetModal{{ projet.id }}" class="text-warning me-2">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <!-- Delete Project -->
+                                        <form method="POST" action="{% url 'supprimer_projet' projet.id %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-link text-danger p-0">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </span>
+                                </h5>
                                 <p class="card-text">{{ projet.description }}</p>
                                 <h6 class="mt-3">Tâches :</h6>
                                 <ul class="list-group list-group-flush">
                                     {% for tache in projet.taches.all %}
-                                        <li class="list-group-item">
-                                            <strong>{{ tache.titre }}</strong>: {{ tache.description }}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>
+                                                <strong>{{ tache.titre }}</strong>: {{ tache.description }}
+                                            </span>
+                                            <span>
+                                                <!-- Trigger Task Edit Modal -->
+                                                <a href="#" data-bs-toggle="modal" data-bs-target="#editTacheModal{{ tache.id }}" class="text-warning me-2">
+                                                    <i class="bi bi-pencil-square"></i>
+                                                </a>
+                                                <!-- Delete Task -->
+                                                <form method="POST" action="{% url 'supprimer_tache' tache.id %}" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-link text-danger p-0">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </span>
                                         </li>
+
+                                        <!-- Task Edit Modal -->
+                                        <div class="modal fade" id="editTacheModal{{ tache.id }}" tabindex="-1" aria-labelledby="editTacheModalLabel{{ tache.id }}" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="editTacheModalLabel{{ tache.id }}">Modifier Tâche</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <form method="POST" action="{% url 'editer_tache' tache.id %}">
+                                                            {% csrf_token %}
+                                                            <div class="mb-3">
+                                                                <label for="titreTache{{ tache.id }}" class="form-label">Titre</label>
+                                                                <input type="text" class="form-control" id="titreTache{{ tache.id }}" name="titre" value="{{ tache.titre }}">
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label for="descriptionTache{{ tache.id }}" class="form-label">Description</label>
+                                                                <textarea class="form-control" id="descriptionTache{{ tache.id }}" name="description">{{ tache.description }}</textarea>
+                                                            </div>
+                                                            <div class="text-end">
+                                                                <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     {% empty %}
                                         <li class="list-group-item">Aucune tâche disponible.</li>
                                     {% endfor %}
                                 </ul>
                                 <div class="mt-3">
                                     <a href="{% url 'creer_tache' projet.id %}" class="btn btn-outline-primary btn-sm">Ajouter une Tâche</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project Edit Modal -->
+                    <div class="modal fade" id="editProjetModal{{ projet.id }}" tabindex="-1" aria-labelledby="editProjetModalLabel{{ projet.id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="editProjetModalLabel{{ projet.id }}">Modifier Projet</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form method="POST" action="{% url 'editer_projet' projet.id %}">
+                                        {% csrf_token %}
+                                        <div class="mb-3">
+                                            <label for="titreProjet{{ projet.id }}" class="form-label">Titre</label>
+                                            <input type="text" class="form-control" id="titreProjet{{ projet.id }}" name="titre" value="{{ projet.titre }}">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="descriptionProjet{{ projet.id }}" class="form-label">Description</label>
+                                            <textarea class="form-control" id="descriptionProjet{{ projet.id }}" name="description">{{ projet.description }}</textarea>
+                                        </div>
+                                        <div class="text-end">
+                                            <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
                         </div>
